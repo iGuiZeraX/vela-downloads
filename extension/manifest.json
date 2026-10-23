@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Vela — Enviar downloads",
+  "version": "0.2.0",
+  "description": "Envie links ao Vela e assuma downloads do Chrome quando desejar.",
+  "permissions": [
+    "downloads",
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:17839/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vela"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}

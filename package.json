@@ -1,0 +1,20 @@
+{
+  "name": "vela-downloads",
+  "productName": "Vela",
+  "version": "0.2.0",
+  "description": "Seus downloads, no seu ritmo. Gerenciador aberto para Windows.",
+  "main": "src/main.cjs",
+  "license": "MIT",
+  "private": true,
+  "author": "Vela contributors",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "preview": "node scripts/preview.cjs",
+    "package": "electron-packager . Vela --platform=win32 --arch=x64 --out=release/0.2.0 --overwrite --ignore=\"^/(release|test|scripts|docs)($|/)\" --icon=assets/vela.ico --extra-resource=extension"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "@electron/packager": "20.3.0"
+  }
+}

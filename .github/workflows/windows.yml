@@ -1,0 +1,42 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node node_modules/electron/install.js
+      - run: npm test
+      - run: npm run package
+      - name: Create unsigned distribution and checksums
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $releaseDir = "release/$version/Vela-win32-x64"
+          $zip = "release/Vela-Windows-$version-unsigned.zip"
+          Compress-Archive -Path $releaseDir -DestinationPath $zip
+          $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $zip
+          "$($hash.Hash.ToLower())  $([IO.Path]::GetFileName($zip))" | Set-Content -Encoding utf8 "release/SHA256SUMS.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vela-Windows-unsigned
+          path: |
+            release/Vela-Windows-*-unsigned.zip
+            release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
