@@ -290,6 +290,7 @@ class DownloadEngine extends EventEmitter {
         catch(e) { if(e.code!=='EEXIST'||suffix===9999) throw e; }
       }
       d.phase='syncing'; d.diskWritten=finalSize; this.emit('update');
+      if((await fsp.stat(output)).size!==finalSize)throw new Error('Verificação do tamanho no destino falhou.');
       await syncFile(output);
       d.filename=path.basename(output); d.filePath=output; d.size=finalSize; d.downloaded=finalSize;
       d.status='completed'; d.phase='completed'; d.completedAt=new Date().toISOString(); d.error=null;
