@@ -1,0 +1,564 @@
+{
+  "scope": "Two sequential runs per engine, 32 MiB over loopback; maximum four concurrent requests, 64 KiB every 20 ms per response; excess requests return HTTP 429 with Retry-After 1s. No IDM, ISP, TLS or public server measurement.",
+  "date": "2026-10-23T14:40:02.762Z",
+  "results": [
+    {
+      "round": 1,
+      "version": "0.2.0",
+      "totalMs": 16985,
+      "mibPerSecond": 1.8840153076243744,
+      "rejections": 28,
+      "requests": 64,
+      "peak": 4,
+      "finalConnections": 1,
+      "actualRateCV": 0.09699272373718626,
+      "displayedRateCV": 0.0943954921501829,
+      "sha256": "9cb49904e31a41a4a7c6b350ecc883ab29f23c71806de525a0e326b0f4d1f0c0",
+      "samples": [
+        {
+          "ms": 516,
+          "received": 2424832,
+          "actual": 4697424.238373699,
+          "displayed": 0
+        },
+        {
+          "ms": 1028,
+          "received": 3473408,
+          "actual": 2050421.660113028,
+          "displayed": 4911968.441814596
+        },
+        {
+          "ms": 1541,
+          "received": 4587520,
+          "actual": 2171899.6909350436,
+          "displayed": 2044007.797270955
+        },
+        {
+          "ms": 2041,
+          "received": 5636096,
+          "actual": 2094858.5488607076,
+          "displayed": 2176000
+        },
+        {
+          "ms": 2553,
+          "received": 6684672,
+          "actual": 2048905.6002682429,
+          "displayed": 2036069.9029126214
+        },
+        {
+          "ms": 3067,
+          "received": 7798784,
+          "actual": 2166420.7812370267,
+          "displayed": 2228224
+        },
+        {
+          "ms": 3579,
+          "received": 8847360,
+          "actual": 2047273.4578373258,
+          "displayed": 2052007.8277886496
+        },
+        {
+          "ms": 4080,
+          "received": 9895936,
+          "actual": 2094764.3875510695,
+          "displayed": 2044007.797270955
+        },
+        {
+          "ms": 4591,
+          "received": 11010048,
+          "actual": 2178488.2420389564,
+          "displayed": 2223776.4471057886
+        },
+        {
+          "ms": 5106,
+          "received": 12058624,
+          "actual": 2037392.0318777713,
+          "displayed": 2052007.8277886496
+        },
+        {
+          "ms": 5617,
+          "received": 13172736,
+          "actual": 2182134.696645218,
+          "displayed": 2040031.1284046692
+        },
+        {
+          "ms": 6130,
+          "received": 14221312,
+          "actual": 2042562.873164383,
+          "displayed": 2184533.3333333335
+        },
+        {
+          "ms": 6640,
+          "received": 15335424,
+          "actual": 2184875.202041419,
+          "displayed": 2044007.797270955
+        },
+        {
+          "ms": 7151,
+          "received": 16449536,
+          "actual": 2181223.4336954174,
+          "displayed": 2180258.3170254403
+        },
+        {
+          "ms": 7653,
+          "received": 17432576,
+          "actual": 1956366.250294039,
+          "displayed": 2180258.3170254403
+        },
+        {
+          "ms": 8155,
+          "received": 18350080,
+          "actual": 1826219.501272077,
+          "displayed": 1962155.6886227545
+        },
+        {
+          "ms": 8659,
+          "received": 19333120,
+          "actual": 1951690.1882420918,
+          "displayed": 1820444.4444444445
+        },
+        {
+          "ms": 9165,
+          "received": 20250624,
+          "actual": 1815562.598346668,
+          "displayed": 1950476.1904761905
+        },
+        {
+          "ms": 9678,
+          "received": 21233664,
+          "actual": 1914120.4351399497,
+          "displayed": 1820444.4444444445
+        },
+        {
+          "ms": 10178,
+          "received": 22151168,
+          "actual": 1834077.3891327565,
+          "displayed": 1912529.1828793774
+        },
+        {
+          "ms": 10693,
+          "received": 23068672,
+          "actual": 1782671.2673309387,
+          "displayed": 1835008
+        },
+        {
+          "ms": 11207,
+          "received": 24117248,
+          "actual": 2040963.8568287315,
+          "displayed": 1835008
+        },
+        {
+          "ms": 11722,
+          "received": 24903680,
+          "actual": 1525927.3890686822,
+          "displayed": 1912529.1828793774
+        },
+        {
+          "ms": 12227,
+          "received": 25821184,
+          "actual": 1816498.6058062736,
+          "displayed": 1703936
+        },
+        {
+          "ms": 12727,
+          "received": 26738688,
+          "actual": 1835720.6267473055,
+          "displayed": 1690412.6984126985
+        },
+        {
+          "ms": 13240,
+          "received": 27787264,
+          "actual": 2045118.4600447714,
+          "displayed": 1835008
+        },
+        {
+          "ms": 13752,
+          "received": 28704768,
+          "actual": 1792264.639075614,
+          "displayed": 2044007.797270955
+        },
+        {
+          "ms": 14254,
+          "received": 29622272,
+          "actual": 1825317.7531122796,
+          "displayed": 1792000
+        },
+        {
+          "ms": 14760,
+          "received": 30539776,
+          "actual": 1816302.266220646,
+          "displayed": 1824063.6182902583
+        },
+        {
+          "ms": 15270,
+          "received": 31260672,
+          "actual": 1411174.0391082733,
+          "displayed": 1816839.603960396
+        },
+        {
+          "ms": 15783,
+          "received": 32178176,
+          "actual": 1791227.8828247283,
+          "displayed": 1410755.3816046966
+        },
+        {
+          "ms": 16297,
+          "received": 33161216,
+          "actual": 1911287.2180334153,
+          "displayed": 1792000
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "version": "new",
+      "totalMs": 5866,
+      "mibPerSecond": 5.455165359699966,
+      "rejections": 4,
+      "requests": 64,
+      "peak": 4,
+      "finalConnections": 4,
+      "actualRateCV": 0.3892614451724899,
+      "displayedRateCV": 0.44988908293666485,
+      "sha256": "9cb49904e31a41a4a7c6b350ecc883ab29f23c71806de525a0e326b0f4d1f0c0",
+      "samples": [
+        {
+          "ms": 696,
+          "received": 0,
+          "actual": 0,
+          "displayed": 0
+        },
+        {
+          "ms": 1202,
+          "received": 2097152,
+          "actual": 4149293.296181667,
+          "displayed": 1035197.9301096101
+        },
+        {
+          "ms": 1716,
+          "received": 2097152,
+          "actual": 0,
+          "displayed": 2077875.1367810539
+        },
+        {
+          "ms": 2219,
+          "received": 6291456,
+          "actual": 8330618.564174815,
+          "displayed": 1723562.5166179813
+        },
+        {
+          "ms": 2722,
+          "received": 10485760,
+          "actual": 8343310.498640791,
+          "displayed": 3348468.659175335
+        },
+        {
+          "ms": 3230,
+          "received": 14417920,
+          "actual": 7744103.6328451615,
+          "displayed": 4317943.924075424
+        },
+        {
+          "ms": 3730,
+          "received": 18874368,
+          "actual": 8918393.297628649,
+          "displayed": 4983792.886701775
+        },
+        {
+          "ms": 4243,
+          "received": 22544384,
+          "actual": 7149137.1691371165,
+          "displayed": 6173078.37409767
+        },
+        {
+          "ms": 4745,
+          "received": 26476544,
+          "actual": 7828175.746941218,
+          "displayed": 6863794.387276304
+        },
+        {
+          "ms": 5249,
+          "received": 29884416,
+          "actual": 6767946.057761696,
+          "displayed": 8005932.550536332
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "version": "0.2.0",
+      "totalMs": 16718,
+      "mibPerSecond": 1.9141045579614786,
+      "rejections": 28,
+      "requests": 64,
+      "peak": 4,
+      "finalConnections": 1,
+      "actualRateCV": 0.09361692085824226,
+      "displayedRateCV": 0.09153386233120091,
+      "sha256": "9cb49904e31a41a4a7c6b350ecc883ab29f23c71806de525a0e326b0f4d1f0c0",
+      "samples": [
+        {
+          "ms": 519,
+          "received": 2490368,
+          "actual": 4801747.037769531,
+          "displayed": 0
+        },
+        {
+          "ms": 1020,
+          "received": 3538944,
+          "actual": 2089742.1921351275,
+          "displayed": 4962920.388349514
+        },
+        {
+          "ms": 1521,
+          "received": 4587520,
+          "actual": 2095737.7961351667,
+          "displayed": 2092966.0678642713
+        },
+        {
+          "ms": 2023,
+          "received": 5636096,
+          "actual": 2089706.3761816607,
+          "displayed": 2092966.0678642713
+        },
+        {
+          "ms": 2531,
+          "received": 6750208,
+          "actual": 2190578.4708625334,
+          "displayed": 2092966.0678642713
+        },
+        {
+          "ms": 3034,
+          "received": 7798784,
+          "actual": 2083595.7095942309,
+          "displayed": 2052007.8277886496
+        },
+        {
+          "ms": 3536,
+          "received": 8847360,
+          "actual": 2089076.882219479,
+          "displayed": 2084644.1351888669
+        },
+        {
+          "ms": 4039,
+          "received": 9895936,
+          "actual": 2086440.6310881132,
+          "displayed": 2088796.812749004
+        },
+        {
+          "ms": 4542,
+          "received": 10944512,
+          "actual": 2085300.4036856892,
+          "displayed": 2088796.812749004
+        },
+        {
+          "ms": 5043,
+          "received": 11993088,
+          "actual": 2089713.455982085,
+          "displayed": 2088796.812749004
+        },
+        {
+          "ms": 5545,
+          "received": 13041664,
+          "actual": 2089243.7943894803,
+          "displayed": 2084644.1351888669
+        },
+        {
+          "ms": 6059,
+          "received": 13959168,
+          "actual": 1787119.6276106942,
+          "displayed": 2088796.812749004
+        },
+        {
+          "ms": 6560,
+          "received": 15007744,
+          "actual": 2091414.8308360565,
+          "displayed": 1916257.3099415204
+        },
+        {
+          "ms": 7071,
+          "received": 16121856,
+          "actual": 2179680.765605344,
+          "displayed": 2036069.9029126214
+        },
+        {
+          "ms": 7572,
+          "received": 17170432,
+          "actual": 2094265.2647590684,
+          "displayed": 2171758.2846003897
+        },
+        {
+          "ms": 8087,
+          "received": 18087936,
+          "actual": 1780209.2430389246,
+          "displayed": 2092966.0678642713
+        },
+        {
+          "ms": 8588,
+          "received": 19005440,
+          "actual": 1831826.4837630028,
+          "displayed": 1781561.1650485436
+        },
+        {
+          "ms": 9256,
+          "received": 19922944,
+          "actual": 1374325.3477514759,
+          "displayed": 1831345.3093812375
+        },
+        {
+          "ms": 9766,
+          "received": 20774912,
+          "actual": 1671567.7618593532,
+          "displayed": 1339572.327044025
+        },
+        {
+          "ms": 10265,
+          "received": 21757952,
+          "actual": 1968431.0940988066,
+          "displayed": 1670525.4901960783
+        },
+        {
+          "ms": 10766,
+          "received": 22609920,
+          "actual": 1701098.9072424837,
+          "displayed": 1970020.0400801604
+        },
+        {
+          "ms": 11278,
+          "received": 23592960,
+          "actual": 1919223.314314999,
+          "displayed": 1700534.9301397207
+        },
+        {
+          "ms": 11794,
+          "received": 24576000,
+          "actual": 1906700.7621837738,
+          "displayed": 1920000
+        },
+        {
+          "ms": 12295,
+          "received": 25493504,
+          "actual": 1829215.2411742378,
+          "displayed": 1905116.2790697673
+        },
+        {
+          "ms": 12804,
+          "received": 26476544,
+          "actual": 1931430.5227087238,
+          "displayed": 1831345.3093812375
+        },
+        {
+          "ms": 13320,
+          "received": 27394048,
+          "actual": 1779844.2201775038,
+          "displayed": 1931316.3064833006
+        },
+        {
+          "ms": 13821,
+          "received": 28377088,
+          "actual": 1959839.479130546,
+          "displayed": 1778108.5271317828
+        },
+        {
+          "ms": 14322,
+          "received": 29360128,
+          "actual": 1964159.444894795,
+          "displayed": 1962155.6886227545
+        },
+        {
+          "ms": 14823,
+          "received": 30343168,
+          "actual": 1961778.212735106,
+          "displayed": 1962155.6886227545
+        },
+        {
+          "ms": 15324,
+          "received": 31195136,
+          "actual": 1698789.686523646,
+          "displayed": 1962155.6886227545
+        },
+        {
+          "ms": 15831,
+          "received": 32112640,
+          "actual": 1811202.6392315228,
+          "displayed": 1700534.9301397207
+        },
+        {
+          "ms": 16334,
+          "received": 33030144,
+          "actual": 1824194.539608102,
+          "displayed": 1809672.58382643
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "version": "new",
+      "totalMs": 5141,
+      "mibPerSecond": 6.224469947481035,
+      "rejections": 4,
+      "requests": 64,
+      "peak": 4,
+      "finalConnections": 4,
+      "actualRateCV": 0.05915775648289608,
+      "displayedRateCV": 0.33342693743284296,
+      "sha256": "9cb49904e31a41a4a7c6b350ecc883ab29f23c71806de525a0e326b0f4d1f0c0",
+      "samples": [
+        {
+          "ms": 510,
+          "received": 2097152,
+          "actual": 4113877.6911382354,
+          "displayed": 0
+        },
+        {
+          "ms": 1011,
+          "received": 2097152,
+          "actual": 0,
+          "displayed": 4084833.7240621382
+        },
+        {
+          "ms": 1514,
+          "received": 6029312,
+          "actual": 7817945.51081888,
+          "displayed": 2062823.7252584826
+        },
+        {
+          "ms": 2015,
+          "received": 10223616,
+          "actual": 8365831.188007583,
+          "displayed": 3968068.34438366
+        },
+        {
+          "ms": 2518,
+          "received": 14417920,
+          "actual": 8353227.071416309,
+          "displayed": 5186627.908357119
+        },
+        {
+          "ms": 3029,
+          "received": 18612224,
+          "actual": 8197036.694812833,
+          "displayed": 5716395.659717877
+        },
+        {
+          "ms": 3539,
+          "received": 22544384,
+          "actual": 7709061.052220456,
+          "displayed": 6223397.751970814
+        },
+        {
+          "ms": 4053,
+          "received": 26214400,
+          "actual": 7140179.795558312,
+          "displayed": 6749952.2157530505
+        },
+        {
+          "ms": 4558,
+          "received": 29884416,
+          "actual": 7266024.632706021,
+          "displayed": 8057354.725625868
+        }
+      ]
+    }
+  ]
+}

@@ -33,7 +33,7 @@ const digest=b=>createHash('sha256').update(b).digest('hex');
     results.push({profile:name,connections:job.connections,observedPeakConnections:peak,networkMs:Math.round(networkMs),totalMs:Math.round(totalMs),mibPerSecond:+(payload.length/1024/1024/(totalMs/1000)).toFixed(2),sha256:expected});
    }finally{await engine.shutdown();}
   }
-  const report={version:'0.2.0',date:new Date().toISOString(),fixture:'16 MiB; cada resposta limitada a 64 KiB a cada 20 ms; loopback',scope:'Comparação local de uma execução por perfil. Não mede a internet do usuário, não compara com IDM e não garante ganho em servidores públicos.',results,speedup:+(results[0].totalMs/results[1].totalMs).toFixed(2)};
+  const report={version:require('../package.json').version,date:new Date().toISOString(),fixture:'16 MiB; cada resposta limitada a 64 KiB a cada 20 ms; loopback',scope:'Comparação local de uma execução por perfil. Não mede a internet do usuário, não compara com IDM e não garante ganho em servidores públicos.',results,speedup:+(results[0].totalMs/results[1].totalMs).toFixed(2)};
   await fs.mkdir(path.resolve(__dirname,'../docs'),{recursive:true});await fs.writeFile(path.resolve(__dirname,'../docs/PERFORMANCE.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));if(path.resolve(dir).startsWith(path.resolve(os.tmpdir())+path.sep)&&path.basename(dir).startsWith('vela-benchmark-'))await fs.rm(dir,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});
