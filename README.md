@@ -12,6 +12,7 @@ Versão local 0.2.1, com melhorias de estabilidade. Os binários ainda não têm
 - Até oito arquivos simultâneos; perfil automático que começa com até oito conexões e cresce até 32 quando há ganho de transferência, sem limite de banda imposto pelo Vela.
 - Média de velocidade em janela de três segundos; velocidade instantânea e limite de conexões disponíveis ao passar o mouse sobre a velocidade do arquivo.
 - Espera coordenada após HTTP 429/503, respeito a Retry-After e redução única por rajada de recusas.
+- Progresso separado de preparação/gravação do arquivo; 100% e Concluído só aparecem depois da gravação, validação de tamanho e confirmação de sincronização do arquivo no destino.
 - Retomada com validação de tamanho e identificador; distribuição das partes entre conexões livres, keep-alive e redução do paralelismo quando o servidor limita conexões.
 - Busca, histórico, pasta configurável, velocidade e progresso.
 - Extensão Chrome Manifest V3 para enviar links e assumir downloads de forma opcional.

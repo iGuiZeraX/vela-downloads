@@ -10,6 +10,7 @@ const { pipeline } = require('node:stream/promises');
 const { Transform, Readable } = require('node:stream');
 const { setTimeout: delay } = require('node:timers/promises');
 const { SpeedMeter, ConnectionController } = require('./transfer-control.cjs');
+const { writeWithProgress, syncFile } = require('./disk-progress.cjs');
 const MIN_PART_BYTES = 512 * 1024;
 const STREAM_BUFFER_BYTES = 256 * 1024;
 const MAX_CONNECTIONS = 32;
@@ -258,17 +259,20 @@ class DownloadEngine extends EventEmitter {
       try { await Promise.all(workers); }
       catch(e) { workerController.abort(); await Promise.allSettled(workers); throw e; }
       if (signal.aborted) throw new Error('Interrompido');
-      d.phase='assembling'; d.speed=0; d.instantSpeed=0; this.emit('update');
+      d.phase='assembling'; d.speed=0; d.instantSpeed=0; d.diskWritten=0; d.diskTotal=d.downloaded; this.emit('update');
       const merged=d.segments.length===1?partPath(0):path.join(tmp,'complete');
       if(d.segments.length>1){
         const parts=Readable.from((async function*(){
           for(let i=0;i<d.segments.length;i++)
             yield* fs.createReadStream(partPath(i),{highWaterMark:1024*1024,signal});
         })());
-        await pipeline(parts,fs.createWriteStream(merged,{highWaterMark:1024*1024}),{signal});
+        await writeWithProgress(parts,merged,{signal,onProgress:bytes=>{d.diskWritten=bytes;}});
       }
       const finalSize=(await fsp.stat(merged)).size;
       if (size!==null && finalSize!==size) throw new Error('Verificação de tamanho falhou.');
+      d.diskWritten=finalSize; d.diskTotal=finalSize; d.phase='syncing'; this.emit('update');
+      await syncFile(merged);
+      signal.throwIfAborted();
       const parsed=path.parse(safeName(d.filename));
       let output;
       for(let suffix=0;suffix<10000;suffix++) {
@@ -276,11 +280,17 @@ class DownloadEngine extends EventEmitter {
         try {
           // Publish atomically on the same volume; fallback supports other volumes/filesystems.
           try {await fsp.link(merged,output);}
-          catch(e){if(!['EXDEV','EPERM','ENOTSUP','EACCES','EINVAL','ENOSYS','UNKNOWN'].includes(e.code))throw e;await fsp.copyFile(merged,output,fs.constants.COPYFILE_EXCL);}
+          catch(e){
+            if(!['EXDEV','EPERM','ENOTSUP','EACCES','EINVAL','ENOSYS','UNKNOWN'].includes(e.code))throw e;
+            d.phase='copying'; d.diskWritten=0; this.emit('update');
+            await writeWithProgress(fs.createReadStream(merged,{highWaterMark:1024*1024}),output,{signal,flags:'wx',onProgress:bytes=>{d.diskWritten=bytes;}});
+          }
           break;
         }
         catch(e) { if(e.code!=='EEXIST'||suffix===9999) throw e; }
       }
+      d.phase='syncing'; d.diskWritten=finalSize; this.emit('update');
+      await syncFile(output);
       d.filename=path.basename(output); d.filePath=output; d.size=finalSize; d.downloaded=finalSize;
       d.status='completed'; d.phase='completed'; d.completedAt=new Date().toISOString(); d.error=null;
       await fsp.rm(tmp,{recursive:true,force:true});
