@@ -42,4 +42,4 @@ O workflow [Windows build](../../actions/workflows/windows.yml) instala as depen
 
 ## Code signing policy
 
-Veja [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md). O projeto ainda não foi inscrito ou aprovado em um programa de assinatura.
+Veja [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md). A solicitação à SignPath Foundation foi enviada em 23/10/2026 e aguarda avaliação. Ainda não há aprovação ou assinatura concedida.

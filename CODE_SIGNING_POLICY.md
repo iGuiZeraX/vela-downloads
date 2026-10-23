@@ -1,6 +1,6 @@
 # Code signing policy
 
-O projeto está preparando uma solicitação de assinatura gratuita para código aberto. Não há aprovação, certificado emitido ou assinatura fornecida pela SignPath Foundation neste momento.
+O projeto enviou uma solicitação de avaliação para assinatura gratuita de código aberto à SignPath Foundation em 23/10/2026. O formulário confirmou o recebimento. Não há aprovação, certificado emitido ou assinatura fornecida pela SignPath Foundation neste momento.
 
 Responsável pelo repositório, revisão e aprovação de releases: [iGuiZeraX](https://github.com/iGuiZeraX).
 
