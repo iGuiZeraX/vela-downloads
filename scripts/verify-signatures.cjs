@@ -2,7 +2,7 @@
 const path=require('node:path');
 const fs=require('node:fs');
 const {execFileSync}=require('node:child_process');
-const root=path.resolve(process.argv[2]||path.join(__dirname,'../release/0.2.0/Vela-win32-x64'));
+const root=path.resolve(process.argv[2]||path.join(__dirname,'../release',require('../package.json').version,'Vela-win32-x64'));
 if(!fs.existsSync(path.join(root,'Vela.exe')))throw new Error('Distribuição Vela não encontrada. Informe a pasta do executável.');
 const command=`$ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)

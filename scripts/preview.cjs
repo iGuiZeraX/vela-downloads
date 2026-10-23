@@ -1,10 +1,10 @@
 // Local development harness. The packaged application uses isolated Electron IPC.
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 const {DownloadEngine}=require('../src/engine.cjs');
-const base=process.env.VELA_PREVIEW_DATA || path.resolve(__dirname,'../../../work/vela-preview');
+const base=process.env.VELA_PREVIEW_DATA || path.resolve(__dirname,'../.preview-data');
 const engine=new DownloadEngine({dataDir:path.join(base,'state'),downloadDir:path.join(base,'downloads')});
 const fixture=Buffer.alloc(8*1024*1024);for(let i=0;i<fixture.length;i++)fixture[i]=i%251;
-const snapshot=()=>({...engine.snapshot(),version:'0.2.0',bridge:{port:17839,token:'0'.repeat(64),extensionPath:path.resolve(__dirname,'../extension')}});
+const snapshot=()=>({...engine.snapshot(),version:require('../package.json').version,bridge:{port:17839,token:'0'.repeat(64),extensionPath:path.resolve(__dirname,'../extension')}});
 const server=http.createServer(async(req,res)=>{
  if(req.headers.host!=='127.0.0.1:17840'){res.writeHead(403).end();return;}
  if(req.url==='/favicon.ico'){res.writeHead(204).end();return;}

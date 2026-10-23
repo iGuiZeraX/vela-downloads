@@ -79,3 +79,22 @@ test('invalid batch is atomic; cancelled download is not published',async t=>{
  const {engine,base}=await fixture(t);assert.throws(()=>engine.add({urls:[base+'/file','file:///invalid']}));assert.equal(engine.downloads.length,0);
  engine.add({urls:[base+'/slow']});const d=engine.downloads[0];await waitFor(()=>d.downloaded>100000);engine.action({id:d.id,action:'cancel'});await waitFor(()=>engine.jobs.size===0);assert.equal(d.status,'cancelled');assert(!d.filePath);
 });
+
+test('received 100 percent is not completed until disk synchronization finishes',async t=>{
+ const {engine,base}=await fixture(t);const originalOpen=fs.open;
+ let entered=false,release;const gate=new Promise(resolve=>{release=resolve;});
+ fs.open=async function(filename,...args){
+  const handle=await originalOpen.call(this,filename,...args);
+  if(path.basename(String(filename))==='complete'&&args[0]==='r+'){
+   const sync=handle.sync.bind(handle);handle.sync=async()=>{entered=true;await gate;return sync();};
+  }
+  return handle;
+ };
+ let d;
+ try {
+  engine.add({urls:[base+'/file']});d=engine.downloads[0];await waitFor(()=>entered);
+  assert.equal(d.downloaded,d.size);assert.equal(d.status,'downloading');assert.equal(d.phase,'syncing');assert.equal(d.filePath,undefined);
+ }finally{release();fs.open=originalOpen;}
+ await waitFor(()=>['completed','error'].includes(d.status));assert.equal(d.status,'completed',d.error);
+ assert.equal(digest(await fs.readFile(d.filePath)),digest(payload));
+});

@@ -5,9 +5,12 @@ const http = require('node:http');
 const https = require('node:https');
 const { EventEmitter } = require('node:events');
 const { randomUUID } = require('node:crypto');
+const { performance } = require('node:perf_hooks');
 const { pipeline } = require('node:stream/promises');
 const { Transform, Readable } = require('node:stream');
 const { setTimeout: delay } = require('node:timers/promises');
+const { SpeedMeter, ConnectionController } = require('./transfer-control.cjs');
+const { writeWithProgress, syncFile } = require('./disk-progress.cjs');
 const MIN_PART_BYTES = 512 * 1024;
 const STREAM_BUFFER_BYTES = 256 * 1024;
 const MAX_CONNECTIONS = 32;
@@ -71,7 +74,7 @@ class DownloadEngine extends EventEmitter {
     const agentOptions={keepAlive:true, maxSockets:256, maxTotalSockets:256, maxFreeSockets:32, scheduling:'lifo'};
     this.agents={'http:':new http.Agent(agentOptions),'https:':new https.Agent(agentOptions)};
     this.downloads = (Array.isArray(state?.downloads) ? state.downloads : []).map(d => ({
-      ...d, status: ['queued','downloading'].includes(d.status) ? 'paused' : d.status, speed:0
+      ...d, status: ['queued','downloading'].includes(d.status) ? 'paused' : d.status, speed:0, instantSpeed:0
     }));
     this.timer = setInterval(() => this.emit('update'), 500);
     this.timer.unref();
@@ -146,7 +149,7 @@ class DownloadEngine extends EventEmitter {
       d.status='downloading'; d.error=null;
       this.run(d,controller.signal).catch(e=>{
         if (!controller.signal.aborted && d.status==='downloading') {d.status='error'; d.error=e.message;}
-      }).finally(()=>{d.speed=0; this.jobs.delete(d.id); this.changed(); this.pump();});
+      }).finally(()=>{d.speed=0; d.instantSpeed=0; this.jobs.delete(d.id); this.changed(); this.pump();});
     }
     this.emit('update');
   }
@@ -167,20 +170,29 @@ class DownloadEngine extends EventEmitter {
     const desired=this.settings.connections || MAX_CONNECTIONS;
     const parallelism=ranges ? Math.max(1, Math.min(desired, Math.floor(size/MIN_PART_BYTES))) : 1;
     // A shared queue lets fast connections take new parts instead of waiting on a slow tail.
-    const count=ranges ? Math.max(1,Math.min(parallelism*4,Math.floor(size/MIN_PART_BYTES))) : 1;
+    const count=ranges ? Math.max(1,Math.min(512,Math.max(parallelism*2,Math.ceil(size/(4*1024*1024))),Math.floor(size/MIN_PART_BYTES))) : 1;
     const canReuse=d.segments && d.size===size && d.rangeSupport===ranges && validator && d.validator===validator;
     if (!canReuse) {
       for (const n of await fsp.readdir(tmp)) await fsp.unlink(path.join(tmp,n));
       d.segments=Array.from({length:count},(_,i)=>({start:ranges?Math.floor(size*i/count):0,end:ranges?Math.floor(size*(i+1)/count)-1:null}));
     }
     d.size=size; d.validator=validator; d.rangeSupport=ranges;
-    d.connections=Math.min(parallelism,d.segments.length); d.phase='transferring';
+    const control=new ConnectionController({maximum:Math.min(parallelism,d.segments.length),automatic:this.settings.connections===0});
+    d.connections=control.limit; d.phase='transferring';
     if (!d.customName) d.filename=responseName(h,probe.url);
     const partPath=i=>path.join(tmp,`${i}.part`);
     const sizes=await Promise.all(d.segments.map((_,i)=>fsp.stat(partPath(i)).then(s=>s.size).catch(()=>0)));
     d.downloaded=sizes.reduce((a,b)=>a+b,0);
-    let lastBytes=d.downloaded, lastAt=Date.now();
-    const speedTimer=setInterval(()=>{const now=Date.now(); d.speed=Math.max(0,(d.downloaded-lastBytes)*1000/(now-lastAt));lastBytes=d.downloaded;lastAt=now;},500);
+    const meter=new SpeedMeter();
+    d.speed=0; d.instantSpeed=0;
+    let previousReceived=0, previousAt=performance.now();
+    const speedTimer=setInterval(()=>{
+      if(d.status!=='downloading'||d.phase!=='transferring')return;
+      const now=performance.now();
+      d.instantSpeed=Math.max(0,(meter.total-previousReceived)*1000/Math.max(1,now-previousAt));
+      previousReceived=meter.total; previousAt=now;
+      d.speed=meter.sample(now); d.connections=control.review(d.speed,now);
+    },500);
     this.changed();
     const workerController=new AbortController();
     const abort=()=>workerController.abort(signal.reason); signal.addEventListener('abort',abort,{once:true});
@@ -188,7 +200,8 @@ class DownloadEngine extends EventEmitter {
     try {
       let activeRequests=0, nextPart=0;
       const takeSlot=async()=>{
-        while(activeRequests>=d.connections) await delay(25,undefined,{signal:workerController.signal});
+        while(activeRequests>=control.limit || control.waitMs()>0)
+          await delay(Math.min(1000,Math.max(25,control.waitMs())),undefined,{signal:workerController.signal});
         workerController.signal.throwIfAborted(); activeRequests++;
       };
       const transfer=async (seg,i)=> {
@@ -204,12 +217,12 @@ class DownloadEngine extends EventEmitter {
             await takeSlot(); hasSlot=true;
             ({res}=await request(probe.url,headers,workerController.signal,0,this.agents));
             if ([429,503].includes(res.statusCode)) {
-              d.connections=Math.max(1,Math.floor(d.connections/2));
               const retryAfter=res.headers['retry-after'];
               if(retryAfter) {
                 const wait=/^\d+$/.test(retryAfter)?Number(retryAfter)*1000:Date.parse(retryAfter)-Date.now();
-                if(Number.isFinite(wait))retryDelay=Math.max(0,Math.min(30000,wait));
+                if(Number.isFinite(wait))retryDelay=Math.max(0,Math.min(Number.MAX_SAFE_INTEGER/2,wait));
               }
+              d.connections=control.throttle(retryDelay);
               throw new Error(`Servidor ocupado (HTTP ${res.statusCode}). Tentando com menos conexões.`);
             }
             if (useRange) {
@@ -222,12 +235,12 @@ class DownloadEngine extends EventEmitter {
             if (validator && returnedValidator && returnedValidator!==validator) throw new Error('O arquivo mudou no servidor.');
             if (!useRange) { d.downloaded-=current; sizes[i]=0; }
             let received=useRange?current:0;
-            const meter=new Transform({highWaterMark:STREAM_BUFFER_BYTES,transform(chunk,enc,cb){
+            const byteStream=new Transform({highWaterMark:STREAM_BUFFER_BYTES,transform(chunk,enc,cb){
               received+=chunk.length;
               if (expected!==null && received>expected) return cb(new Error('Resposta maior que a parte solicitada.'));
-              d.downloaded+=chunk.length; sizes[i]+=chunk.length; cb(null,chunk);
+              d.downloaded+=chunk.length; sizes[i]+=chunk.length; meter.add(chunk.length); cb(null,chunk);
             }});
-            await pipeline(res,meter,fs.createWriteStream(partPath(i),{flags:useRange?'a':'w',highWaterMark:STREAM_BUFFER_BYTES}),{signal:workerController.signal});
+            await pipeline(res,byteStream,fs.createWriteStream(partPath(i),{flags:useRange?'a':'w',highWaterMark:STREAM_BUFFER_BYTES}),{signal:workerController.signal});
             if (expected!==null && received!==expected) throw new Error('Conexão interrompida antes de completar o arquivo.');
             return;
           } catch(e) {
@@ -236,27 +249,30 @@ class DownloadEngine extends EventEmitter {
             const actual=await fsp.stat(partPath(i)).then(s=>s.size).catch(()=>0);
             d.downloaded+=actual-sizes[i]; sizes[i]=actual;
             if (workerController.signal.aborted || attempt===5 || /mudou|recusou|comprimida|maior/.test(e.message)) throw e;
-            await delay(retryDelay,undefined,{signal:workerController.signal});
+            await delay(Math.min(1000,retryDelay),undefined,{signal:workerController.signal});
           } finally {if(hasSlot)activeRequests--;}
         }
       };
-      const workers=Array.from({length:d.connections},async()=>{
+      const workers=Array.from({length:control.maximum},async()=>{
         while(nextPart<d.segments.length){const i=nextPart++;await transfer(d.segments[i],i);}
       });
       try { await Promise.all(workers); }
       catch(e) { workerController.abort(); await Promise.allSettled(workers); throw e; }
       if (signal.aborted) throw new Error('Interrompido');
-      d.phase='assembling'; d.speed=0; this.emit('update');
+      d.phase='assembling'; d.speed=0; d.instantSpeed=0; d.diskWritten=0; d.diskTotal=d.downloaded; this.emit('update');
       const merged=d.segments.length===1?partPath(0):path.join(tmp,'complete');
       if(d.segments.length>1){
         const parts=Readable.from((async function*(){
           for(let i=0;i<d.segments.length;i++)
             yield* fs.createReadStream(partPath(i),{highWaterMark:1024*1024,signal});
         })());
-        await pipeline(parts,fs.createWriteStream(merged,{highWaterMark:1024*1024}),{signal});
+        await writeWithProgress(parts,merged,{signal,onProgress:bytes=>{d.diskWritten=bytes;}});
       }
       const finalSize=(await fsp.stat(merged)).size;
       if (size!==null && finalSize!==size) throw new Error('Verificação de tamanho falhou.');
+      d.diskWritten=finalSize; d.diskTotal=finalSize; d.phase='syncing'; this.emit('update');
+      await syncFile(merged);
+      signal.throwIfAborted();
       const parsed=path.parse(safeName(d.filename));
       let output;
       for(let suffix=0;suffix<10000;suffix++) {
@@ -264,11 +280,18 @@ class DownloadEngine extends EventEmitter {
         try {
           // Publish atomically on the same volume; fallback supports other volumes/filesystems.
           try {await fsp.link(merged,output);}
-          catch(e){if(!['EXDEV','EPERM','ENOTSUP','EACCES','EINVAL','ENOSYS','UNKNOWN'].includes(e.code))throw e;await fsp.copyFile(merged,output,fs.constants.COPYFILE_EXCL);}
+          catch(e){
+            if(!['EXDEV','EPERM','ENOTSUP','EACCES','EINVAL','ENOSYS','UNKNOWN'].includes(e.code))throw e;
+            d.phase='copying'; d.diskWritten=0; this.emit('update');
+            await writeWithProgress(fs.createReadStream(merged,{highWaterMark:1024*1024}),output,{signal,flags:'wx',onProgress:bytes=>{d.diskWritten=bytes;}});
+          }
           break;
         }
         catch(e) { if(e.code!=='EEXIST'||suffix===9999) throw e; }
       }
+      d.phase='syncing'; d.diskWritten=finalSize; this.emit('update');
+      if((await fsp.stat(output)).size!==finalSize)throw new Error('Verificação do tamanho no destino falhou.');
+      await syncFile(output);
       d.filename=path.basename(output); d.filePath=output; d.size=finalSize; d.downloaded=finalSize;
       d.status='completed'; d.phase='completed'; d.completedAt=new Date().toISOString(); d.error=null;
       await fsp.rm(tmp,{recursive:true,force:true});
